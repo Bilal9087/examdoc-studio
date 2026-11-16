@@ -47,11 +47,11 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+          echo "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > "$GITHUB_WORKSPACE/android/app/release.jks"
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease bundleRelease \
-            -Pandroid.injected.signing.store.file=release.jks \
+            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/android/app/release.jks" \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
