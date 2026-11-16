@@ -323,34 +323,31 @@
       triggerAd();
     }
 
-    // --- Google AdMob Integration (Official Test IDs) ---
+   // --- Google AdMob Integration (Production IDs) ---
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         const { AdMob, BannerAdSize, BannerAdPosition } = window.Capacitor.Plugins;
         if (!AdMob) return;
-        await AdMob.initialize({ initializeForTesting: true });
+        await AdMob.initialize({ requestTrackingAuthorization: false });
         await AdMob.showBanner({
-          adId: 'ca-app-pub-3940256099942544/6300978111',
+          adId: 'ca-app-pub-8606805655071754/5135280634',
           adSize: BannerAdSize.ADAPTIVE_BANNER,
           position: BannerAdPosition.BOTTOM_CENTER,
-          margin: 0,
-          isTesting: true
+          margin: 0
         });
         await AdMob.prepareInterstitial({
-          adId: 'ca-app-pub-3940256099942544/1033173712',
-          isTesting: true
+          adId: 'ca-app-pub-8606805655071754/1903271773'
         });
       } catch (e) {}
     });
 
-    async function triggerAd() {
+   async function triggerAd() {
       try {
         const { AdMob } = window.Capacitor.Plugins;
         if (AdMob) {
           await AdMob.showInterstitial();
           await AdMob.prepareInterstitial({
-            adId: 'ca-app-pub-3940256099942544/1033173712',
-            isTesting: true
+            adId: 'ca-app-pub-8606805655071754/1903271773'
           });
         }
       } catch (e) {}

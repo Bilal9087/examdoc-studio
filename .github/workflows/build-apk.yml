@@ -37,7 +37,7 @@ jobs:
       - name: Inject AdMob App ID
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          ADMOB_META='<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>'
+          ADMOB_META='<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8606805655071754~4202132055"/>'
           sed -i "s|</application>|    ${ADMOB_META}\n    </application>|g" "$MANIFEST"
 
       - name: Decode Keystore & Build Signed Release APK + AAB
