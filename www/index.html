@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ExamDoc Studio - Form Photo & CNIC PDF Maker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { background-color: #090d16; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; padding-bottom: 85px; }
+    .tab-active { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border-color: #3b82f6; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; }
+    input[type="range"] { accent-color: #3b82f6; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-[#090d16]/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg">ID</div>
+      <div>
+        <h1 class="text-base font-bold leading-tight text-white">ExamDoc Studio</h1>
+        <p class="text-[11px] text-emerald-400">● 100% Offline • NTS / FPSC / Uni Ready</p>
+      </div>
+    </div>
+    <span class="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">Exact KB</span>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="grid grid-cols-3 gap-2 p-3">
+    <button onclick="switchTab('photo')" id="tab-photo" class="tab-active border border-slate-800 py-2.5 px-2 rounded-xl text-xs font-semibold transition">📸 Photo KB</button>
+    <button onclick="switchTab('cnic')" id="tab-cnic" class="bg-slate-900 text-slate-300 border border-slate-800 py-2.5 px-2 rounded-xl text-xs font-semibold transition">🪪 CNIC PDF</button>
+    <button onclick="switchTab('sign')" id="tab-sign" class="bg-slate-900 text-slate-300 border border-slate-800 py-2.5 px-2 rounded-xl text-xs font-semibold transition">✍️ Sign Clean</button>
+  </nav>
+
+  <!-- TOOL 1: EXACT KB PHOTO RESIZER -->
+  <main id="view-photo" class="px-3 space-y-3">
+    <div class="card p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold text-blue-400">1. Portal Preset Chunein</h2>
+        <span id="photo-orig-info" class="text-[11px] text-slate-400">No file selected</span>
+      </div>
+
+      <select id="portal-preset" onchange="applyPreset()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white">
+        <option value="200,230,20">NTS / FPSC / PPSC Photo (200×230 px • Max 20 KB)</option>
+        <option value="300,300,30">FIA / Pak Navy / Army Portal (300×300 px • Max 30 KB)</option>
+        <option value="413,531,50">University / HEC / Passport (413×531 px • Max 50 KB)</option>
+        <option value="600,600,100">High-Res Form Photo (600×600 px • Max 100 KB)</option>
+      </select>
+
+      <label class="block w-full border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl p-4 text-center cursor-pointer transition">
+        <input type="file" id="photo-input" accept="image/*" class="hidden" onchange="loadPhoto(event)" />
+        <span class="text-xs font-semibold text-blue-400">+ Gallery Ya Camera Se Photo Select Karein</span>
+      </label>
+
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="text-[10px] text-slate-400">Width (px)</label>
+          <input type="number" id="p-width" value="200" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400">Height (px)</label>
+          <input type="number" id="p-height" value="230" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400">Max Size (KB)</label>
+          <input type="number" id="p-kb" value="20" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-400 font-bold" />
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[10px] text-slate-400 block mb-1">Background Fill (Transparent PNG ke liye):</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="setBg('#ffffff')" class="bg-white text-slate-900 text-xs font-bold py-1.5 rounded-lg border border-slate-400">White BG</button>
+          <button type="button" onclick="setBg('#38bdf8')" class="bg-sky-400 text-slate-950 text-xs font-bold py-1.5 rounded-lg">Sky Blue</button>
+          <button type="button" onclick="setBg('#1d4ed8')" class="bg-blue-700 text-white text-xs font-bold py-1.5 rounded-lg">Royal Blue</button>
+        </div>
+      </div>
+
+      <button onclick="processExactKBPhoto()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
+        ⚡ Exact KB Photo Banayein
+      </button>
+    </div>
+
+    <div id="photo-result-box" class="card p-4 hidden text-center space-y-3">
+      <div class="inline-block bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full" id="photo-final-stats">Ready</div>
+      <div class="flex justify-center">
+        <img id="photo-preview" class="max-h-48 rounded-lg border border-slate-700 shadow" />
+      </div>
+      <a id="photo-download-btn" onclick="triggerAd()" download="portal-photo.jpg" class="block w-full bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs">
+        ⬇️ Save / Download Photo
+      </a>
+    </div>
+  </main>
+
+  <!-- TOOL 2: CNIC FRONT + BACK 1-PAGE PDF MERGER -->
+  <main id="view-cnic" class="px-3 space-y-3 hidden">
+    <div class="card p-4 space-y-3">
+      <h2 class="text-sm font-bold text-blue-400">🪪 CNIC / ID Card Front + Back Ek Page Par</h2>
+      <p class="text-[11px] text-slate-400">Dono sides select karein — app automatically A4 page par standard card size aur kam KB ki PDF bana degi.</p>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <label class="border-2 border-dashed border-slate-700 rounded-xl p-3 text-center cursor-pointer">
+          <input type="file" accept="image/*" class="hidden" onchange="loadCnicSide('front', event)" />
+          <div id="cnic-front-label" class="text-xs font-semibold text-blue-400">+ Front Side</div>
+          <img id="cnic-front-prev" class="mt-2 max-h-24 mx-auto rounded hidden" />
+        </label>
+        <label class="border-2 border-dashed border-slate-700 rounded-xl p-3 text-center cursor-pointer">
+          <input type="file" accept="image/*" class="hidden" onchange="loadCnicSide('back', event)" />
+          <div id="cnic-back-label" class="text-xs font-semibold text-blue-400">+ Back Side</div>
+          <img id="cnic-back-prev" class="mt-2 max-h-24 mx-auto rounded hidden" />
+        </label>
+      </div>
+
+      <div>
+        <label class="text-[11px] text-slate-400">PDF Compression Quality: <span id="cnic-q-val" class="text-white font-bold">75%</span></label>
+        <input type="range" id="cnic-quality" min="30" max="95" value="75" oninput="document.getElementById('cnic-q-val').innerText=this.value+'%'" class="w-full" />
+      </div>
+
+      <button onclick="generateCnicPDF()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
+        📄 1-Page CNIC PDF Download Karein
+      </button>
+    </div>
+  </main>
+
+  <!-- TOOL 3: SIGNATURE & THUMB CLEANER -->
+  <main id="view-sign" class="px-3 space-y-3 hidden">
+    <div class="card p-4 space-y-3">
+      <h2 class="text-sm font-bold text-blue-400">✍️ Signature & Thumb Impression Cleaner</h2>
+      <p class="text-[11px] text-slate-400">White paper par sign ki photo upload karein — shadow khatam hokar crisp digital signature ban jayega.</p>
+
+      <label class="block w-full border-2 border-dashed border-slate-700 rounded-xl p-4 text-center cursor-pointer">
+        <input type="file" accept="image/*" class="hidden" onchange="loadSignImage(event)" />
+        <span class="text-xs font-semibold text-blue-400">+ Signature Photo Select Karein</span>
+      </label>
+
+      <div>
+        <label class="text-[11px] text-slate-400">Ink Darkness / Background Cleanup: <span id="sign-th-val" class="text-white font-bold">155</span></label>
+        <input type="range" id="sign-thresh" min="80" max="220" value="155" oninput="document.getElementById('sign-th-val').innerText=this.value; renderSignature();" class="w-full" />
+      </div>
+
+      <div class="bg-white rounded-xl p-2 flex justify-center">
+        <canvas id="sign-canvas" class="max-h-36"></canvas>
+      </div>
+
+      <button onclick="downloadSignature()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
+        ⬇️ Clean Signature Download Karein (Under 20 KB)
+      </button>
+    </div>
+  </main>
+
+  <script>
+    let origPhotoImg = null;
+    let selectedBg = '#ffffff';
+    let cnicFrontImg = null, cnicBackImg = null;
+    let signOrigImg = null;
+
+    function switchTab(tab) {
+      ['photo', 'cnic', 'sign'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('tab-' + t);
+        btn.className = t === tab
+          ? 'tab-active border border-slate-800 py-2.5 px-2 rounded-xl text-xs font-semibold transition'
+          : 'bg-slate-900 text-slate-300 border border-slate-800 py-2.5 px-2 rounded-xl text-xs font-semibold transition';
+      });
+    }
+
+    function applyPreset() {
+      const [w, h, kb] = document.getElementById('portal-preset').value.split(',');
+      document.getElementById('p-width').value = w;
+      document.getElementById('p-height').value = h;
+      document.getElementById('p-kb').value = kb;
+    }
+
+    function setBg(color) {
+      selectedBg = color;
+      if (origPhotoImg) processExactKBPhoto();
+    }
+
+    function loadPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('photo-orig-info').innerText = `Original: ${(file.size / 1024).toFixed(1)} KB`;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => { origPhotoImg = img; processExactKBPhoto(); };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function processExactKBPhoto() {
+      if (!origPhotoImg) return alert('Pehle photo select karein!');
+      const w = parseInt(document.getElementById('p-width').value) || 200;
+      const h = parseInt(document.getElementById('p-height').value) || 230;
+      const targetBytes = (parseInt(document.getElementById('p-kb').value) || 20) * 1024;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = selectedBg;
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(origPhotoImg, 0, 0, w, h);
+
+      // Binary search for exact target KB
+      let low = 0.05, high = 0.98, bestUrl = canvas.toDataURL('image/jpeg', 0.5);
+      for (let i = 0; i < 10; i++) {
+        const mid = (low + high) / 2;
+        const url = canvas.toDataURL('image/jpeg', mid);
+        const bytes = Math.round((url.length - 'data:image/jpeg;base64,'.length) * 0.75);
+        if (bytes <= targetBytes) {
+          bestUrl = url;
+          low = mid;
+        } else {
+          high = mid;
+        }
+      }
+
+      const finalKB = (((bestUrl.length - 'data:image/jpeg;base64,'.length) * 0.75) / 1024).toFixed(2);
+      document.getElementById('photo-preview').src = bestUrl;
+      document.getElementById('photo-download-btn').href = bestUrl;
+      document.getElementById('photo-final-stats').innerText = `✅ ${w}×${h} px • Final Size: ${finalKB} KB`;
+      document.getElementById('photo-result-box').classList.remove('hidden');
+    }
+
+    function loadCnicSide(side, e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          if (side === 'front') {
+            cnicFrontImg = img;
+            document.getElementById('cnic-front-prev').src = ev.target.result;
+            document.getElementById('cnic-front-prev').classList.remove('hidden');
+            document.getElementById('cnic-front-label').innerText = '✅ Front Loaded';
+          } else {
+            cnicBackImg = img;
+            document.getElementById('cnic-back-prev').src = ev.target.result;
+            document.getElementById('cnic-back-prev').classList.remove('hidden');
+            document.getElementById('cnic-back-label').innerText = '✅ Back Loaded';
+          }
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compressForPdf(img, quality) {
+      const c = document.createElement('canvas');
+      c.width = 900;
+      c.height = 570;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      return c.toDataURL('image/jpeg', quality);
+    }
+
+    function generateCnicPDF() {
+      if (!cnicFrontImg || !cnicBackImg) return alert('CNIC ki Front aur Back dono photos select karein!');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const q = (parseInt(document.getElementById('cnic-quality').value) || 75) / 100;
+
+      doc.setFontSize(12);
+      doc.text('CNIC / IDENTITY CARD COPY', 105, 22, { align: 'center' });
+      // Standard ID Card dimensions on A4: 85.6mm x 54mm (scaled 1.25x for clear print)
+      doc.addImage(compressForPdf(cnicFrontImg, q), 'JPEG', 51, 35, 108, 68);
+      doc.addImage(compressForPdf(cnicBackImg, q), 'JPEG', 51, 115, 108, 68);
+
+      doc.save('CNIC-Front-Back-A4.pdf');
+      triggerAd();
+    }
+
+    function loadSignImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => { signOrigImg = img; renderSignature(); };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderSignature() {
+      if (!signOrigImg) return;
+      const canvas = document.getElementById('sign-canvas');
+      canvas.width = 400;
+      canvas.height = 150;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 400, 150);
+      ctx.drawImage(signOrigImg, 0, 0, 400, 150);
+
+      const thresh = parseInt(document.getElementById('sign-thresh').value) || 155;
+      const imgData = ctx.getImageData(0, 0, 400, 150);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
+        if (avg > thresh) {
+          d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
+        } else {
+          d[i] = 15; d[i + 1] = 23; d[i + 2] = 42;
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    function downloadSignature() {
+      if (!signOrigImg) return alert('Pehle signature photo select karein!');
+      const canvas = document.getElementById('sign-canvas');
+      const a = document.createElement('a');
+      a.download = 'clean-signature.jpg';
+      a.href = canvas.toDataURL('image/jpeg', 0.75);
+      a.click();
+      triggerAd();
+    }
+
+    // --- Google AdMob Integration (Official Test IDs) ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { AdMob, BannerAdSize, BannerAdPosition } = window.Capacitor.Plugins;
+        if (!AdMob) return;
+        await AdMob.initialize({ initializeForTesting: true });
+        await AdMob.showBanner({
+          adId: 'ca-app-pub-3940256099942544/6300978111',
+          adSize: BannerAdSize.ADAPTIVE_BANNER,
+          position: BannerAdPosition.BOTTOM_CENTER,
+          margin: 0,
+          isTesting: true
+        });
+        await AdMob.prepareInterstitial({
+          adId: 'ca-app-pub-3940256099942544/1033173712',
+          isTesting: true
+        });
+      } catch (e) {}
+    });
+
+    async function triggerAd() {
+      try {
+        const { AdMob } = window.Capacitor.Plugins;
+        if (AdMob) {
+          await AdMob.showInterstitial();
+          await AdMob.prepareInterstitial({
+            adId: 'ca-app-pub-3940256099942544/1033173712',
+            isTesting: true
+          });
+        }
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

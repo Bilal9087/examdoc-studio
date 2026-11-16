@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<body style="background:#090d16;color:#fff;font-family:system-ui,sans-serif;text-align:center;padding:30px;">
+  <h2>ExamDoc Studio — Custom Icon & Splash Generator</h2>
+  <p>Dono buttons par click karein aur files ko <b>C:\FormDocStudio\assets\</b> folder mein move karein:</p>
+  <button onclick="dl(false, 1024, 'icon-only.png')" style="padding:14px 22px;font-size:15px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;margin:8px;font-weight:bold;">1. Download icon-only.png (1024×1024)</button>
+  <button onclick="dl(true, 2732, 'splash.png')" style="padding:14px 22px;font-size:15px;background:#10b981;color:#fff;border:none;border-radius:10px;cursor:pointer;margin:8px;font-weight:bold;">2. Download splash.png (2732×2732)</button>
+  <br><br>
+  <canvas id="c" width="420" height="420" style="border-radius:36px;box-shadow:0 15px 40px rgba(37,99,235,0.35);"></canvas>
+  <script>
+    function draw(canvas, size, isSplash) {
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const bg = ctx.createLinearGradient(0, 0, size, size);
+      bg.addColorStop(0, '#090d16'); bg.addColorStop(1, '#1e293b');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, size, size);
+
+      const scale = isSplash ? 0.34 : 0.72;
+      const box = size * scale, x = (size - box) / 2, y = (size - box) / 2, r = box * 0.22;
+
+      const card = ctx.createLinearGradient(x, y, x + box, y + box);
+      card.addColorStop(0, '#2563eb'); card.addColorStop(1, '#4f46e5');
+      ctx.fillStyle = card;
+      ctx.beginPath(); ctx.roundRect(x, y, box, box, r); ctx.fill();
+
+      // White Document Sheet
+      const dw = box * 0.52, dh = box * 0.64, dx = size/2 - dw/2, dy = size/2 - dh/2;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.roundRect(dx, dy, dw, dh, box * 0.06); ctx.fill();
+
+      // Photo Avatar Box on Document
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath(); ctx.roundRect(dx + dw*0.14, dy + dh*0.14, dw*0.32, dh*0.28, box*0.03); ctx.fill();
+
+      // Text Lines
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(dx + dw*0.54, dy + dh*0.18, dw*0.32, dh*0.06);
+      ctx.fillRect(dx + dw*0.54, dy + dh*0.30, dw*0.24, dh*0.06);
+      ctx.fillRect(dx + dw*0.14, dy + dh*0.54, dw*0.72, dh*0.06);
+      ctx.fillRect(dx + dw*0.14, dy + dh*0.68, dw*0.50, dh*0.06);
+
+      // Emerald Verified Check Badge
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath(); ctx.arc(x + box*0.78, y + box*0.78, box*0.15, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = box * 0.035; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x + box*0.71, y + box*0.78);
+      ctx.lineTo(x + box*0.76, y + box*0.83);
+      ctx.lineTo(x + box*0.85, y + box*0.73);
+      ctx.stroke();
+    }
+    draw(document.getElementById('c'), 420, false);
+    function dl(isSplash, size, name) {
+      const tmp = document.createElement('canvas');
+      draw(tmp, size, isSplash);
+      const a = document.createElement('a');
+      a.download = name; a.href = tmp.toDataURL('image/png'); a.click();
+    }
+  </script>
+</body>
+</html>
